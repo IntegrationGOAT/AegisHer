@@ -1,13 +1,18 @@
+// HomeScreen — DPSI gauge, quick actions, recent incidents.
+// Reads theme tokens; light and dark variants are automatic.
+
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
-import '../models/safety_score.dart';
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/glass_card.dart';
 import '../models/incident_report.dart';
-import '../services/safety_service.dart';
+import '../models/safety_score.dart';
 import '../services/location_service.dart';
-import '../widgets/safety_score_indicator.dart';
-import '../widgets/incident_card.dart';
+import '../services/safety_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
+import '../widgets/incident_card.dart';
+import '../widgets/safety_score_indicator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final LocationService _locationService = LocationService();
 
   SafetyScore _safetyScore = SafetyScore.initial();
-  List<IncidentReport> _recentIncidents = [];
+  List<IncidentReport> _recentIncidents = <IncidentReport>[];
   bool _isLoading = true;
 
   @override
@@ -56,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error loading data: $e'),
-            backgroundColor: AppTheme.dangerRed,
+            backgroundColor: AppTheme.signalRed,
           ),
         );
       }
@@ -68,92 +73,104 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'AegisHer', showBackButton: false),
       body: RefreshIndicator(
-        color: AppTheme.primaryRed,
+        color: AppTheme.electricCyan,
         onRefresh: _loadData,
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryRed),
+                child: CircularProgressIndicator(color: AppTheme.electricCyan),
               )
             : SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AegisSpacing.space5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Safety Score Section
-                    _AnimatedCard(
+                  children: <Widget>[
+                    _AnimatedSection(
                       delay: Duration.zero,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
+                      child: GlassCard(
+                        padding: const EdgeInsets.all(AegisSpacing.space7),
                         child: Column(
-                          children: [
+                          children: <Widget>[
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
+                              children: <Widget>[
                                 Container(
                                   width: 4,
                                   height: 24,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryRed,
+                                    gradient: AegisGradients.aegisCyanGradient,
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                const Text(
+                                const SizedBox(width: AegisSpacing.space3),
+                                Text(
                                   'Current Area Safety',
                                   style: TextStyle(
-                                    color: AppTheme.textPrimary,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: AegisSpacing.space3),
                                 Container(
                                   width: 4,
                                   height: 24,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.primaryRed,
+                                    gradient: AegisGradients.aegisCyanGradient,
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AegisSpacing.space6),
                             SafetyScoreIndicator(
                               safetyScore: _safetyScore,
                               size: 140,
                             ),
-                            const SizedBox(height: 20),
-                            if (_safetyScore.factors.isNotEmpty) ...[
-                              const Divider(color: AppTheme.cardBorder),
-                              const SizedBox(height: 12),
-                              const Text(
+                            const SizedBox(height: AegisSpacing.space6),
+                            if (_safetyScore.factors.isNotEmpty) ...<Widget>[
+                              Divider(
+                                color: AppTheme.cardBorder.withValues(
+                                  alpha: 0.4,
+                                ),
+                              ),
+                              const SizedBox(height: AegisSpacing.space4),
+                              Text(
                                 'Safety Factors',
                                 style: TextStyle(
-                                  color: AppTheme.textSecondary,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: AegisSpacing.space3),
                               ..._safetyScore.factors.map(
                                 (factor) => Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
+                                    vertical: AegisSpacing.space1,
                                   ),
                                   child: Row(
-                                    children: [
+                                    children: <Widget>[
                                       const Icon(
                                         Icons.check_circle,
-                                        color: AppTheme.safeGreen,
+                                        color: AppTheme.signalGreen,
                                         size: 18,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        factor,
-                                        style: const TextStyle(
-                                          color: AppTheme.textPrimary,
-                                          fontSize: 14,
+                                      const SizedBox(
+                                          width: AegisSpacing.space3),
+                                      Expanded(
+                                        child: Text(
+                                          factor,
+                                          style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -165,113 +182,77 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Quick Actions
-                    const Text(
+                    const SizedBox(height: AegisSpacing.space7),
+                    Text(
                       'Quick Actions',
                       style: TextStyle(
-                        color: AppTheme.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AegisSpacing.space4),
                     Row(
-                      children: [
+                      children: <Widget>[
                         Expanded(
                           child: _QuickActionCard(
                             icon: Icons.map_outlined,
                             label: 'Find Safe Route',
-                            color: AppTheme.primaryRed,
+                            gradient: AegisGradients.aegisCyanGradient,
                             delay: const Duration(milliseconds: 100),
-                            onTap: () {
-                              // Navigation handled by parent widget
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Use bottom navigation to switch tabs',
-                                  ),
-                                  backgroundColor: AppTheme.safeGreen,
-                                ),
-                              );
-                            },
+                            onTap: () => _snack('Use bottom navigation'),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AegisSpacing.space4),
                         Expanded(
                           child: _QuickActionCard(
                             icon: Icons.add_circle_outline,
                             label: 'Report Incident',
-                            color: AppTheme.accentRed,
+                            gradient: AegisGradients.aegisVioletGradient,
                             delay: const Duration(milliseconds: 200),
-                            onTap: () {
-                              // Navigation handled by parent widget
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Use bottom navigation to switch tabs',
-                                  ),
-                                  backgroundColor: AppTheme.safeGreen,
-                                ),
-                              );
-                            },
+                            onTap: () => _snack('Use bottom navigation'),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-
-                    // Recent Incidents
+                    const SizedBox(height: AegisSpacing.space7),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
+                      children: <Widget>[
+                        Text(
                           'Recent Incidents',
                           style: TextStyle(
-                            color: AppTheme.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            // Navigation handled by parent widget
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Use bottom navigation to switch tabs',
-                                ),
-                                backgroundColor: AppTheme.safeGreen,
-                              ),
-                            );
-                          },
-                          child: const Text(
-                            'See All',
-                            style: TextStyle(color: AppTheme.primaryRed),
-                          ),
+                          onPressed: () => _snack('Use bottom navigation'),
+                          child: const Text('See All'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AegisSpacing.space3),
                     if (_recentIncidents.isEmpty)
-                      _AnimatedCard(
+                      _AnimatedSection(
                         delay: const Duration(milliseconds: 300),
-                        child: const Padding(
-                          padding: EdgeInsets.all(24),
+                        child: GlassCard(
                           child: Center(
                             child: Column(
-                              children: [
-                                Icon(
+                              children: <Widget>[
+                                const Icon(
                                   Icons.shield_outlined,
-                                  color: AppTheme.primaryRed,
+                                  color: AppTheme.electricCyan,
                                   size: 48,
                                 ),
-                                SizedBox(height: 12),
+                                const SizedBox(height: AegisSpacing.space4),
                                 Text(
                                   'No recent incidents in your area',
                                   style: TextStyle(
-                                    color: AppTheme.textSecondary,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
                                     fontSize: 15,
                                   ),
                                 ),
@@ -282,61 +263,65 @@ class _HomeScreenState extends State<HomeScreen> {
                       )
                     else
                       ..._recentIncidents.asMap().entries.map(
-                        (entry) => _AnimatedCard(
-                          delay: Duration(milliseconds: 100 * (entry.key + 1)),
-                          child: IncidentCard(
-                            incident: entry.value,
-                            onUpvote: () {
-                              _safetyService.upvoteIncident(entry.value.id);
-                            },
+                            (entry) => _AnimatedSection(
+                              delay: Duration(
+                                  milliseconds: 100 * (entry.key + 1)),
+                              child: IncidentCard(
+                                incident: entry.value,
+                                onUpvote: () {
+                                  _safetyService
+                                      .upvoteIncident(entry.value.id);
+                                },
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
                   ],
                 ),
               ),
       ),
     );
   }
+
+  void _snack(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        backgroundColor: AppTheme.signalGreen,
+      ),
+    );
+  }
 }
 
-class _AnimatedCard extends StatefulWidget {
+class _AnimatedSection extends StatefulWidget {
   final Widget child;
   final Duration delay;
 
-  const _AnimatedCard({required this.child, this.delay = Duration.zero});
+  const _AnimatedSection({required this.child, this.delay = Duration.zero});
 
   @override
-  State<_AnimatedCard> createState() => _AnimatedCardState();
+  State<_AnimatedSection> createState() => _AnimatedSectionState();
 }
 
-class _AnimatedCardState extends State<_AnimatedCard>
+class _AnimatedSectionState extends State<_AnimatedSection>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  late Animation<double> _fade;
+  late Animation<Offset> _slide;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: AppTheme.mediumDuration,
+      duration: AegisMotion.medium,
       vsync: this,
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
+    _fade = CurvedAnimation(parent: _controller, curve: AegisMotion.decelerate);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-
-    // Start animation after a frame to allow build to complete
+    ).animate(CurvedAnimation(parent: _controller, curve: AegisMotion.decelerate));
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (mounted) _controller.forward();
     });
   }
 
@@ -349,8 +334,8 @@ class _AnimatedCardState extends State<_AnimatedCard>
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(position: _slideAnimation, child: widget.child),
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }
@@ -358,51 +343,55 @@ class _AnimatedCardState extends State<_AnimatedCard>
 class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
+  final LinearGradient gradient;
   final Duration delay;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.label,
-    required this.color,
+    required this.gradient,
     required this.delay,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fgPrimary =
+        isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
     return Card(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AegisRadius.radiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AegisSpacing.space6),
           child: Column(
-            children: [
+            children: <Widget>[
               Container(
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      color.withValues(alpha: 0.3),
-                      color.withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: gradient,
+                  borderRadius:
+                      BorderRadius.circular(AegisRadius.radiusLg),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: AppTheme.electricCyan.withValues(alpha: 0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: Icon(icon, color: color, size: 28),
+                child: Icon(icon, color: AppTheme.obsidian, size: 28),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AegisSpacing.space4),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: TextStyle(
+                  color: fgPrimary,
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
               ),

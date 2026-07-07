@@ -1,5 +1,10 @@
+// SafetyMapScreen — Map placeholder + route inputs (real Mapbox wired in
+// the Phase-5 ferment; for now this stays a polished placeholder).
+
 import 'package:flutter/material.dart';
 
+import '../core/theme/design_tokens.dart';
+import '../core/widgets/glass_card.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
 
@@ -25,13 +30,13 @@ class _SafetyMapScreenState extends State<SafetyMapScreen> {
 
   Future<void> _findSafeRoute() async {
     setState(() => _isCalculating = true);
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
     if (mounted) {
       setState(() => _isCalculating = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Safe route found! Map integration coming soon.'),
-          backgroundColor: AppTheme.safeGreen,
+          backgroundColor: AppTheme.signalGreen,
         ),
       );
     }
@@ -42,52 +47,54 @@ class _SafetyMapScreenState extends State<SafetyMapScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Safe Route', showBackButton: false),
       body: Column(
-        children: [
-          // Map placeholder
+        children: <Widget>[
           Expanded(
             flex: 3,
             child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.darkSurface, AppTheme.darkBackground],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+              decoration: const BoxDecoration(
+                gradient: AegisGradients.aegisObsidianGradient,
               ),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: <Widget>[
                     Container(
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        gradient: RadialGradient(
+                          colors: <Color>[
+                            AppTheme.electricCyan.withValues(alpha: 0.20),
+                            AppTheme.electricCyan.withValues(alpha: 0.0),
+                          ],
+                        ),
                         border: Border.all(
-                          color: AppTheme.primaryRed.withValues(alpha: 0.3),
+                          color: AppTheme.electricCyan.withValues(alpha: 0.35),
                           width: 2,
                         ),
                       ),
-                      child: Icon(
+                      child: const Icon(
                         Icons.map_outlined,
                         size: 48,
-                        color: AppTheme.primaryRed.withValues(alpha: 0.6),
+                        color: AppTheme.electricCyan,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
+                    const SizedBox(height: AegisSpacing.space5),
+                    Text(
                       'Map Integration',
                       style: TextStyle(
-                        color: AppTheme.textSecondary,
+                        color: AppTheme.textPrimary,
                         fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AegisSpacing.space3),
                     Text(
                       'Enter locations below to find a safe route',
                       style: TextStyle(
-                        color: AppTheme.textSecondary.withValues(alpha: 0.7),
+                        color: AppTheme.textSecondary,
                         fontSize: 14,
                       ),
                     ),
@@ -97,85 +104,59 @@ class _SafetyMapScreenState extends State<SafetyMapScreen> {
             ),
           ),
 
-          // Route input section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: AppTheme.darkBackground,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          GlassCard(
+            padding: const EdgeInsets.all(AegisSpacing.space5),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AegisRadius.radiusXl),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Start location
+              children: <Widget>[
                 TextField(
                   controller: _startController,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(
                       Icons.circle,
-                      color: AppTheme.safeGreen,
+                      color: AppTheme.signalGreen,
                       size: 12,
                     ),
                     hintText: 'Enter starting location',
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                // End location
+                const SizedBox(height: AegisSpacing.space4),
                 TextField(
                   controller: _endController,
                   decoration: const InputDecoration(
                     prefixIcon: Icon(
                       Icons.flag,
-                      color: AppTheme.dangerRed,
+                      color: AppTheme.violet,
                       size: 12,
                     ),
                     hintText: 'Enter destination',
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Find route button
+                const SizedBox(height: AegisSpacing.space6),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     onPressed:
                         (_startController.text.isNotEmpty &&
-                            _endController.text.isNotEmpty &&
-                            !_isCalculating)
-                        ? _findSafeRoute
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryRed,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: AppTheme.primaryRed.withValues(
-                        alpha: 0.4,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                      shadowColor: AppTheme.primaryRed.withValues(alpha: 0.4),
-                    ),
+                                _endController.text.isNotEmpty &&
+                                !_isCalculating)
+                            ? _findSafeRoute
+                            : null,
                     child: _isCalculating
                         ? const SizedBox(
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text(
-                            'Find Safest Route',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                        : const Text('Find Safest Route'),
                   ),
                 ),
               ],

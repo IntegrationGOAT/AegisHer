@@ -1,8 +1,11 @@
+// ReportIncidentScreen — typed form for submitting a community incident.
+
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../core/theme/design_tokens.dart';
 import '../models/incident_report.dart';
 import '../services/safety_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
 
 class ReportIncidentScreen extends StatefulWidget {
@@ -30,14 +33,13 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Future<void> _submitReport() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSubmitting = true);
 
     try {
       final report = IncidentReport(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         type: _selectedType,
-        latitude: 19.0760, // TODO: Use actual location
+        latitude: 19.0760,
         longitude: 72.8777,
         address: _addressController.text,
         description: _descriptionController.text,
@@ -51,7 +53,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Incident reported successfully!'),
-              backgroundColor: AppTheme.safeGreen,
+              backgroundColor: AppTheme.signalGreen,
             ),
           );
           Navigator.pop(context);
@@ -60,7 +62,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Failed to report incident. Please try again.'),
-              backgroundColor: AppTheme.dangerRed,
+              backgroundColor: AppTheme.signalRed,
             ),
           );
         }
@@ -71,7 +73,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppTheme.dangerRed,
+            backgroundColor: AppTheme.signalRed,
           ),
         );
       }
@@ -86,64 +88,65 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         showBackButton: false,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AegisSpacing.space5),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Incident Type Selection
-              const Text(
+            children: <Widget>[
+              Text(
                 'Incident Type',
                 style: TextStyle(
-                  color: AppTheme.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AegisSpacing.space4),
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: AegisSpacing.space3,
+                runSpacing: AegisSpacing.space3,
                 children: IncidentType.values.map((type) {
                   final isSelected = _selectedType == type;
                   return GestureDetector(
                     onTap: () => setState(() => _selectedType = type),
                     child: AnimatedContainer(
-                      duration: AppTheme.fastDuration,
+                      duration: AegisMotion.fast,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: AegisSpacing.space5,
+                        vertical: AegisSpacing.space3,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppTheme.primaryRed
-                            : AppTheme.darkSurface,
-                        borderRadius: BorderRadius.circular(12),
+                        gradient: isSelected
+                            ? AegisGradients.aegisCyanGradient
+                            : null,
+                        color: isSelected ? null : AppTheme.darkSurface,
+                        borderRadius:
+                            BorderRadius.circular(AegisRadius.radiusMd),
                         border: Border.all(
                           color: isSelected
-                              ? AppTheme.primaryRed
-                              : AppTheme.cardBorder,
+                              ? Colors.transparent
+                              : AppTheme.cardBorder.withValues(alpha: 0.6),
                         ),
                       ),
                       child: Text(
                         type.label,
                         style: TextStyle(
                           color: isSelected
-                              ? Colors.white
+                              ? AppTheme.obsidian
                               : AppTheme.textSecondary,
                           fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AegisSpacing.space7),
 
-              // Address
               TextFormField(
                 controller: _addressController,
                 decoration: const InputDecoration(
@@ -158,9 +161,8 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AegisSpacing.space5),
 
-              // Description
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
@@ -178,44 +180,24 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AegisSpacing.space7),
 
-              // Submit button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitReport,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryRed,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppTheme.primaryRed.withValues(
-                      alpha: 0.4,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 4,
-                    shadowColor: AppTheme.primaryRed.withValues(alpha: 0.4),
-                  ),
                   child: _isSubmitting
                       ? const SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Submit Report',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      : const Text('Submit Report'),
                 ),
               ),
             ],

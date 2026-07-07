@@ -1,5 +1,5 @@
 name: aegisher
-description: "A new Flutter project."
+description: "AegisHer — AI-powered personal safety companion (Flutter mobile MVP)."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,10 +16,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 0.1.0+1
 
 environment:
-  sdk: '>=3.12.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
+  flutter: '>=3.24.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -35,16 +36,79 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.6.2
+
+  # Networking
+  dio: ^5.7.0
+  web_socket_channel: ^3.0.1
+
+  # Models / serialization
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Persistence
+  drift: ^2.21.0
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2
+  path_provider: ^2.1.5
+
+  # Maps / location
+  mapbox_maps_flutter: ^2.8.0
+  geolocator: ^13.0.2
+  permission_handler: ^11.3.1
+
+  # Security / biometrics
+  local_auth: ^2.3.0
+
+  # Notifications / messaging
+  firebase_messaging: ^15.1.5
+  flutter_local_notifications: ^17.2.4
+
+  # Service locator (kept available alongside Riverpod)
+  get_it: ^7.7.0
+
+  # Internationalization
+  intl: ^0.19.0
+
+  # UI / media
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  google_fonts: ^6.2.1
+  image_picker: ^1.1.2
+
+  # Device capabilities
+  connectivity_plus: ^6.0.5
+  sensors_plus: ^6.0.1
+  record: ^5.2.0
+  url_launcher: ^6.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
-  flutter_lints: ^6.0.0
+  # Integration tests
+  integration_test:
+    sdk: flutter
+
+  # Linting
+  flutter_lints: ^5.0.0
+  custom_lint: ^0.7.0
+  riverpod_lint: ^2.6.3
+
+  # Code generation
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.3
+  drift_dev: ^2.21.0
+
+  # Mocking
+  mocktail: ^1.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

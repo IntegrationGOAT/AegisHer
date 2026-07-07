@@ -16,7 +16,7 @@ class RoutePoint {
       latitude: json['latitude'] as double,
       longitude: json['longitude'] as double,
       safetyScore: json['safety_score'] as double? ?? 0.0,
-      warnings: List<String>.from(json['warnings'] ?? []),
+      warnings: (json['warnings'] as List?)?.cast<String>() ?? const <String>[],
     );
   }
 
@@ -58,8 +58,8 @@ class SafeRoute {
       overallSafetyScore: json['overall_safety_score'] as double,
       distance: json['distance'] as double,
       estimatedDurationMinutes: json['estimated_duration_minutes'] as int,
-      safetyHighlights: List<String>.from(json['safety_highlights'] ?? []),
-      warnings: List<String>.from(json['warnings'] ?? []),
+      safetyHighlights: (json['safety_highlights'] as List?)?.cast<String>() ?? const <String>[],
+      warnings: (json['warnings'] as List?)?.cast<String>() ?? const <String>[],
     );
   }
 

@@ -1,10 +1,13 @@
+// CommunityScreen — filterable list of community-reported incidents.
+
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../core/theme/design_tokens.dart';
 import '../models/incident_report.dart';
 import '../services/safety_service.dart';
-import '../widgets/incident_card.dart';
+import '../theme/app_theme.dart';
 import '../widgets/custom_app_bar.dart';
+import '../widgets/incident_card.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -15,7 +18,7 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   final SafetyService _safetyService = SafetyService();
-  List<IncidentReport> _incidents = [];
+  List<IncidentReport> _incidents = <IncidentReport>[];
   bool _isLoading = true;
   IncidentType? _selectedFilter;
 
@@ -28,7 +31,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Future<void> _loadIncidents() async {
     setState(() => _isLoading = true);
     try {
-      // Using default location for now
       final incidents = await _safetyService.getNearbyIncidents(
         latitude: 19.0760,
         longitude: 72.8777,
@@ -40,10 +42,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
           _isLoading = false;
         });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -60,24 +60,25 @@ class _CommunityScreenState extends State<CommunityScreen> {
         showBackButton: false,
       ),
       body: Column(
-        children: [
-          // Filter chips
+        children: <Widget>[
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: AegisSpacing.space4),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AegisSpacing.space5),
               child: Row(
-                children: [
+                children: <Widget>[
                   _FilterChip(
                     label: 'All',
                     selected: _selectedFilter == null,
                     onTap: () => setState(() => _selectedFilter = null),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AegisSpacing.space3),
                   ...IncidentType.values.map(
                     (type) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding:
+                          const EdgeInsets.only(right: AegisSpacing.space3),
                       child: _FilterChip(
                         label: type.label,
                         selected: _selectedFilter == type,
@@ -90,77 +91,82 @@ class _CommunityScreenState extends State<CommunityScreen> {
             ),
           ),
 
-          // Incident list
           Expanded(
             child: RefreshIndicator(
-              color: AppTheme.primaryRed,
+              color: AppTheme.electricCyan,
               onRefresh: _loadIncidents,
               child: _isLoading
                   ? const Center(
                       child: CircularProgressIndicator(
-                        color: AppTheme.primaryRed,
-                      ),
+                          color: AppTheme.electricCyan),
                     )
                   : _filteredIncidents.isEmpty
-                  ? ListView(
-                      children: const [
-                        SizedBox(height: 100),
-                        Center(
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.shield_outlined,
-                                color: AppTheme.primaryRed,
-                                size: 64,
+                      ? ListView(
+                          children: <Widget>[
+                            const SizedBox(height: 100),
+                            Center(
+                              child: Column(
+                                children: <Widget>[
+                                  const Icon(
+                                    Icons.shield_outlined,
+                                    color: AppTheme.electricCyan,
+                                    size: 64,
+                                  ),
+                                  const SizedBox(
+                                      height: AegisSpacing.space5),
+                                  Text(
+                                    'No incidents reported',
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                      height: AegisSpacing.space3),
+                                  Text(
+                                    'Your area looks safe!',
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 16),
-                              Text(
-                                'No incidents reported',
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                'Your area looks safe!',
-                                style: TextStyle(
-                                  color: AppTheme.textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(
+                              bottom: AegisSpacing.space5),
+                          itemCount: _filteredIncidents.length,
+                          itemBuilder: (context, index) {
+                            final incident = _filteredIncidents[index];
+                            return IncidentCard(
+                              incident: incident,
+                              onUpvote: () {
+                                _safetyService.upvoteIncident(incident.id);
+                              },
+                              onTap: () {
+                                // TODO: Show incident details
+                              },
+                            );
+                          },
                         ),
-                      ],
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: _filteredIncidents.length,
-                      itemBuilder: (context, index) {
-                        final incident = _filteredIncidents[index];
-                        return IncidentCard(
-                          incident: incident,
-                          onUpvote: () {
-                            _safetyService.upvoteIncident(incident.id);
-                          },
-                          onTap: () {
-                            // TODO: Show incident details
-                          },
-                        );
-                      },
-                    ),
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Navigation handled by parent widget
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Use bottom navigation to switch tabs'),
-              backgroundColor: AppTheme.safeGreen,
+              backgroundColor: AppTheme.signalGreen,
             ),
           );
         },
@@ -187,21 +193,32 @@ class _FilterChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: AppTheme.fastDuration,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: AegisMotion.fast,
+        curve: AegisMotion.standard,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AegisSpacing.space5,
+          vertical: AegisSpacing.space3,
+        ),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.primaryRed : AppTheme.darkSurface,
-          borderRadius: BorderRadius.circular(20),
+          gradient: selected ? AegisGradients.aegisCyanGradient : null,
+          color: selected ? null : AppTheme.darkSurface,
+          borderRadius: BorderRadius.circular(AegisRadius.radiusFull),
           border: Border.all(
-            color: selected ? AppTheme.primaryRed : AppTheme.cardBorder,
+            color: selected
+                ? Colors.transparent
+                : AppTheme.cardBorder.withValues(alpha: 0.6),
+            width: 1,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : AppTheme.textSecondary,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            color: selected
+                ? AppTheme.obsidian
+                : AppTheme.textSecondary,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             fontSize: 13,
+            letterSpacing: 0.3,
           ),
         ),
       ),

@@ -38,7 +38,7 @@ class SafetyScore {
         (e) => e.name == json['level'],
         orElse: () => SafetyLevel.unknown,
       ),
-      factors: List<String>.from(json['factors'] ?? []),
+      factors: (json['factors'] as List?)?.cast<String>() ?? const <String>[],
       timestamp: DateTime.parse(json['timestamp'] as String),
     );
   }
