@@ -161,18 +161,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Use bottom navigation to switch tabs'),
-              backgroundColor: AppTheme.signalGreen,
-            ),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Report'),
-      ),
     );
   }
 }

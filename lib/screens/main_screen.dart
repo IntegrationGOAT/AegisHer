@@ -1,102 +1,69 @@
-// MainScreen — bottom-nav shell with five tab destinations (Home, Map,
-// Community, SOS, Settings). For the Foundation MVP, SOS and Settings are
-// surfaced as alert dialogs so the navigation feels real without depending
-// on phases 4-5 features.
-
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/design_tokens.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/sos/presentation/screens/sos_screen.dart';
+import '../features/settings/presentation/controllers/settings_controller.dart';
+import '../features/settings/domain/entities/app_settings.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'community_screen.dart';
 import 'home_screen.dart';
-import 'report_incident_screen.dart';
 import 'safety_map_screen.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
-
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MS();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MS extends ConsumerState<MainScreen> {
   int _currentIndex = 0;
-  ThemeMode _themeMode = ThemeMode.dark;
+  static const List<Widget> _screens = <Widget>[HomeScreen(), SafetyMapScreen(), CommunityScreen(), SosScreen(), SettingsScreen()];
+  void _onItemTapped(int i) => setState(() => _currentIndex = i);
 
-  static const List<Widget> _screens = <Widget>[
-    HomeScreen(),
-    SafetyMapScreen(),
-    CommunityScreen(),
-    ReportIncidentScreen(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  void _toggleTheme() {
-    setState(() {
-      _themeMode =
-          _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
-
-  void _placeholderAction(String label) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$label coming in next phase'),
-        backgroundColor: AppTheme.signalGreen,
-      ),
-    );
+  ThemeMode _resolveThemeMode(AppThemeModeChoice c) {
+    switch (c) {
+      case AppThemeModeChoice.system: return ThemeMode.system;
+      case AppThemeModeChoice.light: return ThemeMode.light;
+      case AppThemeModeChoice.dark: return ThemeMode.dark;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = ref.watch(authControllerProvider);
+    final settings = ref.watch(settingsControllerProvider);
+    if (auth.user == null) return const LoginScreen();
     return MaterialApp(
       title: 'AegisHer',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: _themeMode,
+      themeMode: _resolveThemeMode(settings.themeMode),
       home: Scaffold(
         drawer: AppDrawer(
           currentIndex: _currentIndex,
-          onItemTapped: _onItemTapped,
-          onThemeToggle: _toggleTheme,
-          onProfileTap: () => _placeholderAction('Profile'),
-          onSettingsTap: () => _placeholderAction('Settings'),
-          onHelpTap: () => _placeholderAction('Help'),
-          onAboutTap: () => _placeholderAction('About'),
+          onItemTapped: (i) { Navigator.pop(context); _onItemTapped(i); },
+          onThemeToggle: () {
+            final next = settings.themeMode == AppThemeModeChoice.dark ? AppThemeModeChoice.light : AppThemeModeChoice.dark;
+            ref.read(settingsControllerProvider.notifier).setThemeMode(next);
+          },
+          onProfileTap: () { Navigator.pop(context); _onItemTapped(4); },
+          onSettingsTap: () { Navigator.pop(context); _onItemTapped(4); },
+          onHelpTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Help coming soon'))),
+          onAboutTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AegisHer Foundation MVP'))),
         ),
         body: AnimatedSwitcher(
           duration: AegisMotion.pageIn,
           switchInCurve: AegisMotion.emphasized,
-          switchOutCurve: AegisMotion.standard,
-          transitionBuilder: (child, animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 0.04),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              ),
-            );
-          },
-          child: KeyedSubtree(
-            key: ValueKey<int>(_currentIndex),
-            child: _screens[_currentIndex],
-          ),
+          transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(animation), child: child)),
+          child: KeyedSubtree(key: ValueKey<int>(_currentIndex), child: _screens[_currentIndex]),
         ),
-        bottomNavigationBar: BottomNavBar(
-          currentIndex: _currentIndex,
-          onTap: _onItemTapped,
-        ),
+        bottomNavigationBar: BottomNavBar(currentIndex: _currentIndex, onTap: _onItemTapped),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/theme/design_tokens.dart';
+
 /// AegisHer futuristic design system.
 ///
 /// The visual language is **Apple/Tesla-inspired**: charcoal + obsidian neutrals
@@ -281,6 +283,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
+      extensions: <ThemeExtension<dynamic>>[glassTokensFor(brightness)],
       scaffoldBackgroundColor: isDark ? obsidian : lightBackground,
       canvasColor: isDark ? obsidian : lightBackground,
       primaryColor: electricCyan,
