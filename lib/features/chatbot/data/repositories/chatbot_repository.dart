@@ -1,4 +1,7 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/chat_message.dart';
 
@@ -63,30 +66,61 @@ class MockChatbotRepository implements ChatbotRepository {
   }
 }
 
+/// Resolves the Gemini API key from (in order):
+///   1. `GEMINI_API_KEY` env var loaded from .env (preferred — never baked into APK)
+///   2. `GEMINI_API_KEY` dart-define (escape hatch for CI / release builds)
+String _resolveApiKey() {
+  final fromEnv = dotenv.env['GEMINI_API_KEY']?.trim() ?? '';
+  if (fromEnv.isNotEmpty) return fromEnv;
+  const fromDefine = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
+  return fromDefine.trim();
+}
+
+String _resolveModel() {
+  final fromEnv = dotenv.env['GEMINI_MODEL']?.trim();
+  if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
+  const fromDefine = String.fromEnvironment('GEMINI_MODEL', defaultValue: '');
+  return fromDefine.trim().isEmpty ? 'gemini-flash-latest' : fromDefine.trim();
+}
+
 class GeminiChatbotRepository implements ChatbotRepository {
-  static const String _apiKey = String.fromEnvironment(
-    'GEMINI_API_KEY',
-    defaultValue: '',
-  );
-  static const String _model = String.fromEnvironment(
-    'GEMINI_MODEL',
-    defaultValue: 'gemini-2.0-flash',
-  );
-
-  final Dio _dio;
-
   GeminiChatbotRepository({Dio? dio})
       : _dio = dio ??
             Dio(BaseOptions(
               connectTimeout: const Duration(seconds: 15),
               receiveTimeout: const Duration(seconds: 30),
               sendTimeout: const Duration(seconds: 15),
-            ));
+            )) {
+    _apiKey = _resolveApiKey();
+    _model = _resolveModel();
+    _logKeyPresence();
+  }
+
+  final Dio _dio;
+  late final String _apiKey;
+  late final String _model;
 
   bool get isConfigured => _apiKey.isNotEmpty;
 
   String get _endpoint =>
-      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey';
+      'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent';
+
+  void _logKeyPresence() {
+    if (_apiKey.isEmpty) {
+      developer.log(
+        '[Gemini] GEMINI_API_KEY is EMPTY — chatbot will fall back to mock.',
+        name: 'AegisHer.Chatbot',
+      );
+      return;
+    }
+    final masked = _apiKey.length <= 8
+        ? '***'
+        : '${_apiKey.substring(0, 4)}...${_apiKey.substring(_apiKey.length - 4)} (len=${_apiKey.length})';
+    developer.log(
+      '[Gemini] Key loaded: $masked | model=$_model | endpoint=$_endpoint',
+      name: 'AegisHer.Chatbot',
+    );
+  }
 
   static const String _systemPrompt =
       "You are Aegis, a concise, supportive women's safety companion. "
@@ -110,13 +144,17 @@ class GeminiChatbotRepository implements ChatbotRepository {
   Future<ChatMessage> sendMessage(String text) async {
     if (!isConfigured) {
       throw StateError(
-          'GEMINI_API_KEY not configured at build time. Rebuild with --dart-define=GEMINI_API_KEY=...');
+          'GEMINI_API_KEY not configured. Set it in .env or via --dart-define.');
     }
+
+    developer.log('[Gemini] POST $_endpoint', name: 'AegisHer.Chatbot');
+
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         _endpoint,
         options: Options(headers: {
           'Content-Type': 'application/json',
+          'X-goog-api-key': _apiKey,
         }),
         data: <String, dynamic>{
           'system_instruction': {
@@ -138,6 +176,22 @@ class GeminiChatbotRepository implements ChatbotRepository {
           },
         },
       );
+
+      developer.log(
+        '[Gemini] Response status: ${response.statusCode}',
+        name: 'AegisHer.Chatbot',
+      );
+
+      if (response.statusCode == null || response.statusCode! >= 400) {
+        final body = response.data;
+        developer.log(
+          '[Gemini] Error body: ${body.toString()}',
+          name: 'AegisHer.Chatbot',
+        );
+        throw Exception(
+            'Gemini API error ${response.statusCode}: ${body.toString()}');
+      }
+
       final data = response.data;
       String content = '';
       if (data != null) {
@@ -170,12 +224,23 @@ class GeminiChatbotRepository implements ChatbotRepository {
         intent: classify(text),
       );
     } on DioException catch (e) {
-      final msg = e.response?.data is Map &&
-              (e.response!.data as Map)['error'] is Map
-          ? ((e.response!.data as Map)['error'] as Map)['message']?.toString()
+      final status = e.response?.statusCode;
+      final body = e.response?.data;
+      developer.log(
+        '[Gemini] DioException status=$status body=${body.toString()} message=${e.message}',
+        name: 'AegisHer.Chatbot',
+      );
+      final msg = body is Map && body['error'] is Map
+          ? (body['error'] as Map)['message']?.toString()
           : null;
       throw Exception(
-          'Gemini API error (${e.response?.statusCode ?? 'no status'}): ${msg ?? e.message ?? 'unknown'}');
+          'Gemini API error ${status ?? "no status"}: ${msg ?? body?.toString() ?? e.message ?? "unknown"}');
+    } catch (e, st) {
+      developer.log(
+        '[Gemini] Unexpected error: $e\n$st',
+        name: 'AegisHer.Chatbot',
+      );
+      rethrow;
     }
   }
 }

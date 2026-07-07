@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for Dio HTTP calls to the Gemini API.
+         The debug-only AndroidManifest also declares this, but a release
+         build only merges the main manifest, so we declare it here too. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="aegisher"
         android:name="${applicationName}"
