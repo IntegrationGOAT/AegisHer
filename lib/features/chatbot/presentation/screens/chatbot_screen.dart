@@ -29,9 +29,24 @@ class ChatbotController extends StateNotifier<List<ChatMessage>> {
       intent: ChatIntent.smalltalk,
     );
     state = <ChatMessage>[...state, userMsg];
-    final reply = await _ref.read(chatbotRepositoryProvider).sendMessage(trimmed);
-    if (!mounted) return;
-    state = <ChatMessage>[...state, reply];
+    try {
+      final reply =
+          await _ref.read(chatbotRepositoryProvider).sendMessage(trimmed);
+      if (!mounted) return;
+      state = <ChatMessage>[...state, reply];
+    } catch (e) {
+      if (!mounted) return;
+      state = <ChatMessage>[
+        ...state,
+        ChatMessage(
+          id: 'e_${DateTime.now().millisecondsSinceEpoch}',
+          text: 'Sorry, I could not reach the AI service. ${e.toString()}',
+          fromUser: false,
+          timestamp: DateTime.now(),
+          intent: ChatIntent.unknown,
+        ),
+      ];
+    }
   }
 }
 
