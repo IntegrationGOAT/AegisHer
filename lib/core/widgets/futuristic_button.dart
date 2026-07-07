@@ -5,7 +5,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../../theme/app_theme.dart';
 import '../theme/design_tokens.dart';
 
 enum FuturisticButtonVariant { primary, secondary, ghost, danger }

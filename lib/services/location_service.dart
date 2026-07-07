@@ -9,7 +9,7 @@ class LocationService {
   /// Get current location
   Future<Map<String, double>> getCurrentLocation() async {
     // TODO: Replace with actual GPS/location plugin
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     return {
       'latitude': 19.0760,
       'longitude': 72.8777,

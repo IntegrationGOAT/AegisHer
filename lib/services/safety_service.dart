@@ -11,7 +11,7 @@ class SafetyService {
   /// Get safety score for a specific location
   Future<SafetyScore> getSafetyScore(double latitude, double longitude) async {
     // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     return SafetyScore(
       score: 78.5,
       level: SafetyLevel.safe,
@@ -33,7 +33,7 @@ class SafetyService {
     required double endLng,
   }) async {
     // TODO: Replace with actual API call
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
     return SafeRoute(
       id: 'route_001',
       points: [
@@ -62,7 +62,7 @@ class SafetyService {
     double radiusKm = 1.0,
   }) async {
     // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     return [
       IncidentReport(
         id: 'inc_001',
@@ -92,14 +92,14 @@ class SafetyService {
   /// Report a new incident
   Future<bool> reportIncident(IncidentReport report) async {
     // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future<void>.delayed(const Duration(milliseconds: 800));
     return true;
   }
 
   /// Upvote an incident report
   Future<bool> upvoteIncident(String incidentId) async {
     // TODO: Replace with actual API call
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     return true;
   }
 }

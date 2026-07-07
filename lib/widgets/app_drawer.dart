@@ -33,8 +33,6 @@ class AppDrawer extends StatelessWidget {
     final bg = isDark ? AppTheme.obsidian : AppTheme.lightSurface;
     final fgPrimary =
         isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
-    final fgSecondary =
-        isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
     final border = isDark
         ? AppTheme.darkCardBorder
         : AppTheme.lightCardBorder;
@@ -286,8 +284,6 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fgSecondary =
-        isDark ? AppTheme.textSecondary : AppTheme.textSecondaryLight;
     final fgPrimary =
         isDark ? AppTheme.textPrimary : AppTheme.textPrimaryLight;
 

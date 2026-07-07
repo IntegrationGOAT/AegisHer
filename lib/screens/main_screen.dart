@@ -32,13 +32,6 @@ class _MainScreenState extends State<MainScreen> {
     ReportIncidentScreen(),
   ];
 
-  static const List<String> _titles = <String>[
-    'Home',
-    'Safe Route',
-    'Community',
-    'Report Incident',
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
