@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// ignore: unused_import
 import '../../../safety/data/repositories/safety_repository.dart';
 import '../../data/repositories/sos_repository.dart';
 import '../../domain/entities/sos_event.dart';

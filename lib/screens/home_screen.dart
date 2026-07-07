@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/design_tokens.dart';
 import '../core/widgets/glass_card.dart';
+import '../features/chatbot/presentation/screens/chatbot_screen.dart';
+import '../features/safe_zones/presentation/screens/safe_zones_screen.dart';
+import '../features/safety/presentation/screens/trip_setup_screen.dart';
 import '../models/incident_report.dart';
 import '../models/safety_score.dart';
 import '../services/location_service.dart';
@@ -196,11 +199,41 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: <Widget>[
                         Expanded(
                           child: _QuickActionCard(
-                            icon: Icons.map_outlined,
-                            label: 'Find Safe Route',
+                            icon: Icons.timeline,
+                            label: 'Safety Pulse',
                             gradient: AegisGradients.aegisCyanGradient,
                             delay: const Duration(milliseconds: 100),
-                            onTap: () => _snack('Use bottom navigation'),
+                            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                              builder: (_) => const TripSetupScreen(),
+                            )),
+                          ),
+                        ),
+                        const SizedBox(width: AegisSpacing.space4),
+                        Expanded(
+                          child: _QuickActionCard(
+                            icon: Icons.smart_toy_outlined,
+                            label: 'AI Chatbot',
+                            gradient: AegisGradients.aegisVioletGradient,
+                            delay: const Duration(milliseconds: 200),
+                            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                              builder: (_) => const ChatbotScreen(),
+                            )),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AegisSpacing.space4),
+                    Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: _QuickActionCard(
+                            icon: Icons.shield_outlined,
+                            label: 'Safe Zones',
+                            gradient: AegisGradients.aegisCyanGradient,
+                            delay: const Duration(milliseconds: 300),
+                            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                              builder: (_) => const SafeZonesScreen(),
+                            )),
                           ),
                         ),
                         const SizedBox(width: AegisSpacing.space4),
@@ -209,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: Icons.add_circle_outline,
                             label: 'Report Incident',
                             gradient: AegisGradients.aegisVioletGradient,
-                            delay: const Duration(milliseconds: 200),
+                            delay: const Duration(milliseconds: 400),
                             onTap: () => _snack('Use bottom navigation'),
                           ),
                         ),

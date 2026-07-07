@@ -37,7 +37,7 @@ class _MS extends ConsumerState<MainScreen> {
   Widget build(BuildContext context) {
     final auth = ref.watch(authControllerProvider);
     final settings = ref.watch(settingsControllerProvider);
-    if (auth.user == null) return const LoginScreen();
+    final isLoggedIn = auth.user != null;
     return MaterialApp(
       title: 'AegisHer',
       debugShowCheckedModeBanner: false,
@@ -45,25 +45,29 @@ class _MS extends ConsumerState<MainScreen> {
       darkTheme: AppTheme.darkTheme,
       themeMode: _resolveThemeMode(settings.themeMode),
       home: Scaffold(
-        drawer: AppDrawer(
-          currentIndex: _currentIndex,
-          onItemTapped: (i) { Navigator.pop(context); _onItemTapped(i); },
-          onThemeToggle: () {
-            final next = settings.themeMode == AppThemeModeChoice.dark ? AppThemeModeChoice.light : AppThemeModeChoice.dark;
-            ref.read(settingsControllerProvider.notifier).setThemeMode(next);
-          },
-          onProfileTap: () { Navigator.pop(context); _onItemTapped(4); },
-          onSettingsTap: () { Navigator.pop(context); _onItemTapped(4); },
-          onHelpTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Help coming soon'))),
-          onAboutTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AegisHer Foundation MVP'))),
-        ),
-        body: AnimatedSwitcher(
-          duration: AegisMotion.pageIn,
-          switchInCurve: AegisMotion.emphasized,
-          transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(animation), child: child)),
-          child: KeyedSubtree(key: ValueKey<int>(_currentIndex), child: _screens[_currentIndex]),
-        ),
-        bottomNavigationBar: BottomNavBar(currentIndex: _currentIndex, onTap: _onItemTapped),
+        body: isLoggedIn
+            ? AnimatedSwitcher(
+                duration: AegisMotion.pageIn,
+                switchInCurve: AegisMotion.emphasized,
+                transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(animation), child: child)),
+                child: KeyedSubtree(key: ValueKey<int>(_currentIndex), child: _screens[_currentIndex]),
+              )
+            : const LoginScreen(),
+        drawer: isLoggedIn
+            ? AppDrawer(
+                currentIndex: _currentIndex,
+                onItemTapped: (i) { Navigator.pop(context); _onItemTapped(i); },
+                onThemeToggle: () {
+                  final next = settings.themeMode == AppThemeModeChoice.dark ? AppThemeModeChoice.light : AppThemeModeChoice.dark;
+                  ref.read(settingsControllerProvider.notifier).setThemeMode(next);
+                },
+                onProfileTap: () { Navigator.pop(context); _onItemTapped(4); },
+                onSettingsTap: () { Navigator.pop(context); _onItemTapped(4); },
+                onHelpTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Help coming soon'))),
+                onAboutTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AegisHer Foundation MVP'))),
+              )
+            : null,
+        bottomNavigationBar: isLoggedIn ? BottomNavBar(currentIndex: _currentIndex, onTap: _onItemTapped) : null,
       ),
     );
   }

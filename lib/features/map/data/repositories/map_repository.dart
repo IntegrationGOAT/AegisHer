@@ -8,7 +8,7 @@ abstract class MapRepository {
 class MockMapRepository implements MapRepository {
   static const _d = Duration(milliseconds: 700);
   @override
-  Future<Route> safestRoute({required double startLat = 0, required double startLng = 0, required double endLat = 0, required double endLng = 0}) async {
+  Future<Route> safestRoute({required double startLat, required double startLng, required double endLat, required double endLng}) async {
     await Future<void>.delayed(_d);
     final mid = RouteSegment(latitude: (startLat + endLat) / 2, longitude: (startLng + endLng) / 2, safetyScore: 72.0, warnings: const ['Moderate lighting']);
     return Route(

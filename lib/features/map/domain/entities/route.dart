@@ -20,5 +20,5 @@ class Route {
   final double distanceKm;
   final int estimatedMinutes;
   final List<Hazard> hazards;
-  const Route({required this.id, required this.segments, required this.overallSafetyScore, required this.distanceKm, required this.estimatedMinutes, required this.hazards = const []});
+  const Route({required this.id, required this.segments, required this.overallSafetyScore, required this.distanceKm, required this.estimatedMinutes, this.hazards = const []});
 }
